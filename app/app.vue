@@ -1,3 +1,5 @@
 <template>
-<h1> TCC </h1>
+  <NuxtLayout>
+    <NuxtPage :transition="{ name: 'page', mode: 'out-in' }" />
+  </NuxtLayout>
 </template>
