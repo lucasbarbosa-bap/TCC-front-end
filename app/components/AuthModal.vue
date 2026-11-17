@@ -33,8 +33,7 @@ async function submit() {
     if (f.pass.length < 6) { err.value = 'A senha precisa ter ao menos 6 caracteres.'; return }
     if (f.pass !== f.pass2) { err.value = 'As senhas não coincidem.'; return }
     if (!/^\d{2}\/\d{2}\/\d{2}$/.test(f.birth)) { err.value = 'Informe a data como dd/mm/aa.'; return }
-    // O back-end ainda não tem rota de cadastro.
-    err.value = 'O cadastro ainda não está disponível no servidor.'
+
   }
 }
 </script>

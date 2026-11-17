@@ -1,4 +1,5 @@
 // Usa o login do Django e guarda a sessão em cookies que o navegador não consegue ler.
+
 async function findId(event: any, name: string) {
   try {
     const [p, c] = await Promise.all([django(event, '/postagem/'), django(event, '/comentario/')])
@@ -8,17 +9,19 @@ async function findId(event: any, name: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  const { username, password } = await readBody(event)
+  const { username, password, email} = await readBody(event)
   if (!username || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
+    
 
   let res: any
   try {
-    res = await django(event, '/auth/login/', { method: 'POST', body: { username, password } })
+    res = await django(event, '/auth/register', { method: 'POST', body: { username, password, email } })
   } catch (e: any) {
     const code = e?.statusCode ?? e?.response?.status
     if ([400, 401, 403].includes(code)) throw createError({ statusCode: 401, message: 'Usuário ou senha inválidos.' })
     fail(e, 'O servidor não respondeu. Tente de novo em instantes.')
   }
+  
 
   // Tenta os nomes mais comuns; ajuste aqui se o seu login devolver outros campos.
   const token = res?.access ?? res?.token ?? res?.key ?? res?.access_token
@@ -31,4 +34,8 @@ export default defineEventHandler(async (event) => {
   setCookie(event, 'uname', name, opts)
   if (id != null) setCookie(event, 'uid', String(id), opts)
   return { user: name, id }
-})
+ }
+
+)
+
+

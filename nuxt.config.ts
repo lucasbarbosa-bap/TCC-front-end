@@ -4,7 +4,7 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     // Só o servidor enxerga (não é "public"). Os valores vêm do arquivo .env
-    djangoApi: '',
+    djangoApi: process.env.NUXT_DJANGO_API,
     djangoAuthScheme: 'Bearer'
   },
   app: {
