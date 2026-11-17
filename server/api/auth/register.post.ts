@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Envia os dados direto para a rota do Django
-  const res = await django(event, '/api/register/', { 
+  const res = await django(event, '/registar/', { 
     method: 'POST', 
     body: { username, password, email } 
   })

@@ -27,13 +27,39 @@ async function submit() {
     } finally {
       clearTimeout(timer); busy.value = false; slow.value = false
     }
-  } else {
+  
+    } else {
     if (!/^\S+@\S+\.\S+$/.test(f.email)) { err.value = 'Informe um e-mail válido.'; return }
     if (!f.user.trim()) { err.value = 'Escolha um nome de usuário.'; return }
     if (f.pass.length < 6) { err.value = 'A senha precisa ter ao menos 6 caracteres.'; return }
     if (f.pass !== f.pass2) { err.value = 'As senhas não coincidem.'; return }
     if (!/^\d{2}\/\d{2}\/\d{2}$/.test(f.birth)) { err.value = 'Informe a data como dd/mm/aa.'; return }
 
+    busy.value = true
+    const timer = setTimeout(() => { slow.value = true }, 4000)
+    try {
+      await $fetch('/api/auth/register', {
+        method: 'POST',
+        body: {
+          username: f.user.trim(),
+          email: f.email.trim(),
+          password: f.pass,
+          birth: f.birth // Envie também se o seu backend salvar a data
+        }
+      })
+    
+      show('Conta criada com sucesso!')
+      f.pass = ''
+      f.pass2 = ''
+      err.value = ''
+      go('entrar') // Volta para a tela de login (ou chame auth.login direto)
+    } catch (e: any) {
+      err.value = e?.data?.message || 'Não foi possível criar a conta. Tente de novo.'
+    } finally {
+      clearTimeout(timer)
+      busy.value = false
+      slow.value = false
+    }
   }
 }
 </script>
@@ -61,18 +87,22 @@ async function submit() {
           <button type="button" class="pill big" @click="go('criar')">Criar conta</button>
         </form>
 
-        <form v-else key="criar" @submit.prevent="submit">
+               <form v-else key="criar" @submit.prevent="submit">
           <label class="field">e-mail<input v-model="f.email" type="email" autocomplete="email"></label>
           <label class="field">usuario<input v-model="f.user" autocomplete="username"></label>
           <label class="field">senha<input v-model="f.pass" type="password" autocomplete="new-password"></label>
           <label class="field">repita a senha<input v-model="f.pass2" type="password" autocomplete="new-password"></label>
           <input class="date" :value="f.birth" inputmode="numeric" placeholder="dd/mm/aa" aria-label="Data de nascimento" @input="maskDate">
+          
           <p v-if="err" class="err" role="alert">{{ err }}</p>
+          <p v-if="slow" class="hint" role="status">Acordando o servidor… na primeira vez pode levar até 1 minuto.</p>
+          
           <div class="row2">
             <button type="button" class="pill" @click="go('entrar')">entrar</button>
-            <button type="submit" class="pill">criar conta</button>
+            <button type="submit" class="pill" :disabled="busy">{{ busy ? 'Criando…' : 'criar conta' }}</button>
           </div>
         </form>
+
       </Transition>
       <button type="button" class="guest" @click="auth.browse()">{{ auth.guest ? 'Fechar' : 'Continuar sem conta' }}</button>
     </section>
