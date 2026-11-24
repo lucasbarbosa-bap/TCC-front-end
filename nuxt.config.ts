@@ -4,8 +4,14 @@ export default defineNuxtConfig({
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
     // Só o servidor enxerga (não é "public"). Os valores vêm do arquivo .env
-    djangoApi: process.env.NUXT_DJANGO_API,
-    djangoAuthScheme: 'Bearer'
+    djangoApi: process.env.NUXT_DJANGO_API || 'https://tcc-back-end-1-j9p6.onrender.com/api',
+    djangoAuthScheme: 'Bearer',
+    public: {
+      // Se preenchido, fotos e mídias vão direto do navegador ao Django (exige CORS no Django). Ex.: https://seu-servico.onrender.com/api
+      djangoDirect: '',
+      // Limite total de cada envio pelo servidor do site. A Vercel aceita no máximo 4,5 MB por pedido.
+      maxUploadMb: 4
+    }
   },
   app: {
     head: {

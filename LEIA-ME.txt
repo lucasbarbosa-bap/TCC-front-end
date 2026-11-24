@@ -1,0 +1,26 @@
+VERSÃO 3: REGISTRAR + CRIAR POST + COMENTAR
+
+O que esta versão faz:
+  Cadastro, post e comentário, todos em FormData (comentário com até 5 imagens, botão "Anexar" ao lado de "Enviar").
+  Em todas as versões: o feed mostra as fotos de perfil (autor.avatar) e as mídias (midia) de posts e comentários.
+
+ATENÇÃO:
+  Esta é a versão completa para o back-end novo.
+
+COMO APLICAR
+  1. Antes de tudo, crie uma branch ou faça um commit (git checkout -b envio-de-arquivos).
+  2. Copie as pastas "app" e "server" para a raiz do projeto, aceitando substituir os arquivos.
+     Esta versão já inclui as correções anteriores de curtidas e de login.
+  3. No nuxt.config.ts, acrescente o bloco "public" dentro de runtimeConfig (veja o arquivo deste zip).
+  4. Copie as 2 variáveis novas do .env.example para o seu .env (e para a Vercel, em Environment Variables).
+
+LIMITE DE TAMANHO NA VERCEL
+  A Vercel só aceita 4,5 MB por envio passando pelo servidor do site, então o site limita o total de cada envio
+  a NUXT_PUBLIC_MAX_UPLOAD_MB (padrão 4). No seu computador pode usar 20.
+  Para aceitar os tamanhos do back-end (20 MB por vídeo), use o modo direto: defina NUXT_PUBLIC_DJANGO_DIRECT
+  com o endereço do Django (termina em /api). O navegador passa a enviar direto ao Django, o que EXIGE CORS
+  no Django (pip install django-cors-headers e liberar o endereço do site).
+
+OBSERVAÇÕES
+  - A data de nascimento do cadastro é validada, mas não é salva (o back-end não tem esse campo).
+  - A troca de foto na tela de perfil continua só neste navegador (o back-end não tem rota para isso).

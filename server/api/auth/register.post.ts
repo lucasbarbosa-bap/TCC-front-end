@@ -1,15 +1,32 @@
+// Cria a conta no Django (POST /api/registar/, em FormData, com foto opcional) e já deixa a pessoa logada.
 export default defineEventHandler(async (event) => {
-  const { username, password, email } = await readBody(event)
-  if (!username || !password || !email) {
-    throw createError({ statusCode: 400, message: 'Preencha todos os campos.' })
+  const { fields, files } = await readUpload(event)
+  const user = (fields.username ?? '').trim()
+  const mail = (fields.email ?? '').trim()
+  const password = fields.password ?? ''
+  if (!user || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
+
+  const avatar = files.avatar ?? []
+  checkUpload(avatar, { max: 1, mb: 5, exts: IMG_EXT, label: 'a foto de perfil' })
+
+  let res: any
+  try {
+    res = await django(event, '/registar/', {
+      method: 'POST',
+      body: toDjangoForm({ username: user, email: mail, password }, avatar, 'avatar')
+    })
+  } catch (e: any) {
+    const code = e?.statusCode ?? e?.response?.status
+    const erro = e?.data?.erro || e?.data?.mensagem
+    if (code === 400 && typeof erro === 'string') {
+      throw createError({ statusCode: 400, message: /ja existe/i.test(erro) ? 'Este nome de usuário já está em uso.' : erro })
+    }
+    fail(e, 'Não foi possível criar a conta. Tente de novo em instantes.')
   }
 
-  // Envia os dados direto para a rota do Django
-  const res = await django(event, '/registar/', { 
-    method: 'POST', 
-    body: { username, password, email } 
-  })
-console.log('funcionou')
-  return res
-
+  if (res?.id == null) {
+    throw createError({ statusCode: 502, message: 'Conta criada, mas o servidor não devolveu o id. Entre com seu usuário e senha.' })
+  }
+  startSession(event, user, Number(res.id))
+  return { user, id: Number(res.id), avatar: mediaUrl(event, res?.avatar) }
 })

@@ -1,6 +1,32 @@
+<<<<<<< HEAD
 // Usa o login do Django e guarda a sessão em cookies que o navegador não consegue ler.
 
 async function findId(event: any, name: string) {
+=======
+// O back-end atual responde só "ok" (200) ou "inválido" (401) no login: não devolve id nem token.
+// Por isso, depois de conferir a senha, descobrimos o id do usuário e guardamos a sessão em cookies.
+
+// Pergunta ao back-end "quem é o usuário N?" (GET /usuarios/N/), de 10 em 10, até achar o nome.
+async function findIdByScan(event: any, name: string): Promise<number | null> {
+  const BATCH = 10
+  for (let start = 1; start <= 300; start += BATCH) {
+    const found = await Promise.all(Array.from({ length: BATCH }, async (_, i) => {
+      const id = start + i
+      try {
+        const r: any = await django(event, `/usuarios/${id}/`, { timeout: 15000 })
+        return { id, nome: String(r?.mensagem ?? '') }
+      } catch { return { id, nome: '' } }
+    }))
+    const hit = found.find(x => x.nome === name)
+    if (hit) return hit.id
+    if (found.every(x => !x.nome)) return null   // lote inteiro vazio: não há mais usuários
+  }
+  return null
+}
+
+// Plano B: procura o nome entre os autores de posts e comentários.
+async function findIdByContent(event: any, name: string): Promise<number | null> {
+>>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
   try {
     const [p, c] = await Promise.all([django(event, '/postagem/'), django(event, '/comentario/')])
     const all = [...list(p, 'Postagens'), ...list(c, 'Comentarios')]
@@ -9,6 +35,7 @@ async function findId(event: any, name: string) {
 }
 
 export default defineEventHandler(async (event) => {
+<<<<<<< HEAD
   const { username, password, email} = await readBody(event)
   if (!username || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
     
@@ -16,6 +43,15 @@ export default defineEventHandler(async (event) => {
   let res: any
   try {
     res = await django(event, '/auth/register', { method: 'POST', body: { username, password, email } })
+=======
+  const { username, password } = await readBody(event)
+  const name = String(username ?? '').trim()
+  if (!name || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
+
+  let res: any
+  try {
+    res = await django(event, '/auth/login/', { method: 'POST', body: { username: name, password } })
+>>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
   } catch (e: any) {
     const code = e?.statusCode ?? e?.response?.status
     if ([400, 401, 403].includes(code)) throw createError({ statusCode: 401, message: 'Usuário ou senha inválidos.' })
@@ -23,12 +59,16 @@ export default defineEventHandler(async (event) => {
   }
   
 
-  // Tenta os nomes mais comuns; ajuste aqui se o seu login devolver outros campos.
+  // Se o back-end passar a devolver id, username ou token, usamos; senão descobrimos o id.
   const token = res?.access ?? res?.token ?? res?.key ?? res?.access_token
-  let id = res?.id ?? res?.user?.id ?? res?.usuario?.id ?? res?.user_id ?? res?.autor?.id ?? null
-  const name = String(res?.username ?? res?.user?.username ?? res?.nome ?? username)
-  if (id == null) id = await findId(event, name)
+  const user = String(res?.username ?? res?.user?.username ?? name)
+  let id: number | null = res?.id ?? res?.user?.id ?? null
+  if (id == null) id = (await findIdByScan(event, user)) ?? (await findIdByContent(event, user))
+  if (id == null) {
+    throw createError({ statusCode: 502, message: 'Login confirmado, mas não foi possível identificar sua conta no servidor. Tente de novo.' })
+  }
 
+<<<<<<< HEAD
   const opts = { httpOnly: true, sameSite: 'lax' as const, path: '/', secure: !import.meta.dev, maxAge: 60 * 60 * 24 * 7 }
   if (token) setCookie(event, 'token', token, opts)
   setCookie(event, 'uname', name, opts)
@@ -39,3 +79,8 @@ export default defineEventHandler(async (event) => {
 )
 
 
+=======
+  startSession(event, user, Number(id), token)
+  return { user, id: Number(id) }
+})
+>>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
