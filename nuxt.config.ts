@@ -1,5 +1,6 @@
 // Junte ao nuxt.config.ts existente, sem duplicar chaves.
 export default defineNuxtConfig({
+  compatibilityDate: '2026-11-25',
   modules: ['@pinia/nuxt'],
   css: ['~/assets/css/main.css'],
   runtimeConfig: {
