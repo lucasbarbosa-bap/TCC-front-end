@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-// Usa o login do Django e guarda a sessão em cookies que o navegador não consegue ler.
-
-async function findId(event: any, name: string) {
-=======
 // O back-end atual responde só "ok" (200) ou "inválido" (401) no login: não devolve id nem token.
 // Por isso, depois de conferir a senha, descobrimos o id do usuário e guardamos a sessão em cookies.
 
@@ -26,7 +21,6 @@ async function findIdByScan(event: any, name: string): Promise<number | null> {
 
 // Plano B: procura o nome entre os autores de posts e comentários.
 async function findIdByContent(event: any, name: string): Promise<number | null> {
->>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
   try {
     const [p, c] = await Promise.all([django(event, '/postagem/'), django(event, '/comentario/')])
     const all = [...list(p, 'Postagens'), ...list(c, 'Comentarios')]
@@ -35,15 +29,6 @@ async function findIdByContent(event: any, name: string): Promise<number | null>
 }
 
 export default defineEventHandler(async (event) => {
-<<<<<<< HEAD
-  const { username, password, email} = await readBody(event)
-  if (!username || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
-    
-
-  let res: any
-  try {
-    res = await django(event, '/auth/register', { method: 'POST', body: { username, password, email } })
-=======
   const { username, password } = await readBody(event)
   const name = String(username ?? '').trim()
   if (!name || !password) throw createError({ statusCode: 400, message: 'Preencha usuário e senha.' })
@@ -51,13 +36,11 @@ export default defineEventHandler(async (event) => {
   let res: any
   try {
     res = await django(event, '/auth/login/', { method: 'POST', body: { username: name, password } })
->>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
   } catch (e: any) {
     const code = e?.statusCode ?? e?.response?.status
     if ([400, 401, 403].includes(code)) throw createError({ statusCode: 401, message: 'Usuário ou senha inválidos.' })
     fail(e, 'O servidor não respondeu. Tente de novo em instantes.')
   }
-  
 
   // Se o back-end passar a devolver id, username ou token, usamos; senão descobrimos o id.
   const token = res?.access ?? res?.token ?? res?.key ?? res?.access_token
@@ -68,19 +51,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, message: 'Login confirmado, mas não foi possível identificar sua conta no servidor. Tente de novo.' })
   }
 
-<<<<<<< HEAD
-  const opts = { httpOnly: true, sameSite: 'lax' as const, path: '/', secure: !import.meta.dev, maxAge: 60 * 60 * 24 * 7 }
-  if (token) setCookie(event, 'token', token, opts)
-  setCookie(event, 'uname', name, opts)
-  if (id != null) setCookie(event, 'uid', String(id), opts)
-  return { user: name, id }
- }
-
-)
-
-
-=======
   startSession(event, user, Number(id), token)
   return { user, id: Number(id) }
 })
->>>>>>> 1f5c1f6 (feat: registrar gostar e postar)
