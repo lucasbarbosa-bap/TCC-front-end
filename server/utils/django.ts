@@ -18,14 +18,19 @@ function baseUrl(raw: unknown): string {
 export async function django<T = any>(event: H3Event, path: string, opts: any = {}) {
   const cfg = useRuntimeConfig(event)
   const token = getCookie(event, 'token')
+  
+  // Verifica se o corpo da requisição é um FormData
+  const isFormData = opts.body instanceof FormData
+
   return $fetch<T>(path, {
     baseURL: baseUrl(cfg.djangoApi),
     timeout: 60000,
     retry: 0,
     ...opts,
     headers: {
-      'Accept': 'application/json', // Garante que o Django devolve JSON e evita o erro 406
-      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      // Se for FormData, removemos o Content-Type fixo para o Nuxt/Node gerar o boundary correto
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}),
       ...opts.headers
     }
