@@ -1,11 +1,25 @@
 import type { H3Event } from 'h3'
+import { isError } from 'h3'
+
+/** Garante uma URL válida: com https:// e sem barra no final. Avisa se a variável não foi definida. */
+function baseUrl(raw: unknown): string {
+  let u = String(raw ?? '').trim()
+  if (!u) {
+    throw createError({
+      statusCode: 500,
+      message: 'Back-end não configurado: defina a variável NUXT_DJANGO_API no arquivo .env (ex.: https://seu-servico.onrender.com/api).'
+    })
+  }
+  if (!/^https?:\/\//i.test(u)) u = 'https://' + u
+  return u.replace(/\/+$/, '')
+}
 
 /** Chama o back-end Django. O Render gratuito pode demorar a acordar, por isso o limite longo. */
-export function django<T = any>(event: H3Event, path: string, opts: any = {}) {
+export async function django<T = any>(event: H3Event, path: string, opts: any = {}) {
   const cfg = useRuntimeConfig(event)
   const token = getCookie(event, 'token')
   return $fetch<T>(path, {
-    baseURL: cfg.djangoApi,
+    baseURL: baseUrl(cfg.djangoApi),
     timeout: 60000,
     retry: 0,
     ...opts,
@@ -13,14 +27,19 @@ export function django<T = any>(event: H3Event, path: string, opts: any = {}) {
   })
 }
 
-/** Converte um erro do Django em um erro do Nuxt com mensagem amigável. */
+/** Converte um erro do Django em um erro do Nuxt com mensagem amigável (e registra o motivo no terminal). */
 export function fail(e: any, fallback: string): never {
+  if (isError(e)) throw e   // erros nossos (ex.: back-end não configurado) passam direto
   const code = e?.statusCode ?? e?.response?.status
-  const detail = e?.data?.detail || e?.data?.mensagem || e?.data?.message
-  throw createError({
-    statusCode: code >= 400 && code < 600 ? code : 502,
-    message: typeof detail === 'string' && detail ? detail : fallback
-  })
+  console.error('[django]', code ?? 'sem resposta', e?.cause?.code ?? e?.name ?? '', e?.message ?? e)
+  const detail = e?.data?.detail || e?.data?.mensagem || e?.data?.message || e?.data?.erro
+  if (typeof detail === 'string' && detail) {
+    throw createError({ statusCode: code >= 400 && code < 600 ? code : 502, message: detail })
+  }
+  if (!code || [502, 503, 504].includes(code)) {
+    throw createError({ statusCode: 503, message: 'O servidor está acordando ou indisponível. Aguarde cerca de 1 minuto e tente de novo.' })
+  }
+  throw createError({ statusCode: code, message: fallback })
 }
 
 /** Id do usuário logado, vindo do cookie (o navegador não consegue alterar nem forjar). */
@@ -40,8 +59,9 @@ export function list(data: any, key: string): any[] {
 export function joinTag(text: string, tag?: string) {
   return tag ? `${text}\n\n#${String(tag).trim().replace(/\s+/g, '_')}` : text
 }
+// Atenção: ao viajar em FormData (multipart) as quebras de linha viram \r\n, por isso o \r? aqui.
 export function splitTag(content: string) {
-  const m = content.match(/\n\n#([^\s#]+)\s*$/)
+  const m = content.match(/\r?\n\r?\n#([^\s#]+)\s*$/)
   return m ? { text: content.slice(0, m.index), tag: m[1].replace(/_/g, ' ') } : { text: content, tag: 'Geral' }
 }
 

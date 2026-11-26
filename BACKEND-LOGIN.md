@@ -1,6 +1,6 @@
 # Melhoria recomendada no back-end (opcional, 1 linha)
 
-Hoje o login responde só {"mensagem": "Login Feito UwU!"}. O site precisa do id do usuário
+Hoje o login responde só {"mensagem": "Login Feito"}. O site precisa do id do usuário
 para postar, comentar e curtir, então ele descobre o id perguntando ao back-end
 (GET /api/usuarios/<id>/ de 10 em 10). Funciona, mas gasta chamadas a mais.
 
@@ -8,7 +8,7 @@ Em core/views.py, na função fazer_login, devolva o id e o nome:
 
 ```python
 if autenticado:
-    return JsonResponse({"mensagem": "Login Feito UwU!",
+    return JsonResponse({"mensagem": "Login Feito ",
                          "id": autenticado.id,
                          "username": autenticado.username}, status=200)
 ```
