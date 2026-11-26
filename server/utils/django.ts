@@ -23,7 +23,12 @@ export async function django<T = any>(event: H3Event, path: string, opts: any = 
     timeout: 60000,
     retry: 0,
     ...opts,
-    headers: { ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}), ...opts.headers }
+    headers: {
+      'Accept': 'application/json', // Garante que o Django devolve JSON e evita o erro 406
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}),
+      ...opts.headers
+    }
   })
 }
 

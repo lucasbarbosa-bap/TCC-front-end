@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const uid = getCookie(event, 'uid')
   let raw: any[]
   try {
-    raw = await Promise.all([django(event, '/postagem/'), django(event, '/comentario/'), django(event, '/interacao/')])
+    raw = await Promise.all([django(event, '/postagem/'), django(event, '/interacao/')])
   } catch (e) { fail(e, 'Não foi possível carregar os posts. O servidor pode estar iniciando.') }
 
   const posts = list(raw[0], 'Postagens')
