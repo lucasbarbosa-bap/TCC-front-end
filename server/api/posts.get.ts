@@ -16,8 +16,11 @@ export default defineEventHandler(async (event) => {
       const { text, tag } = splitTag(x.conteudo ?? '')
       const title = x.titulo ?? ''
       const likes = inter.filter((n: any) => n.post_id === x.id && n.tipo === 'like')
+      const likers = new Set(likes.map((n: any) => String(n.autor_id)))   // pessoas diferentes (curtidas repetidas no banco não inflam o número)
       return {
         id: x.id,
+        avatar: mediaUrl(event, x.autor?.avatar),
+        media: mediaList(event, x.midia),
         name: x.autor?.nome ?? 'anônimo',
         role: 'Aluno',                       // o back-end ainda não diferencia aluno e professor
         c: (x.autor?.id ?? 0) % 6,
@@ -25,13 +28,13 @@ export default defineEventHandler(async (event) => {
         tag,
         title,
         text: text.trim() === title.trim() ? '' : text,
-        likes: likes.length,
-        liked: !!uid && likes.some((n: any) => String(n.autor_id) === uid),
+        likes: likers.size,
+        liked: !!uid && likers.has(uid),
         fav: false,
         open: false,
         cms: comments
           .filter((m: any) => m.post_original === x.id)
-          .map((m: any) => ({ n: m.autor?.nome ?? 'anônimo', r: 'Aluno', ok: false, t: m.conteudo ?? '' }))
+          .map((m: any) => ({ n: m.autor?.nome ?? 'anônimo', r: 'Aluno', ok: false, t: m.conteudo ?? '', avatar: mediaUrl(event, m.autor?.avatar), media: mediaList(event, m.midia) }))
       }
     })
 })
