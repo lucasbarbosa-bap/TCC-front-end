@@ -11,5 +11,8 @@ export default defineEventHandler(async (event) => {
     const res = await commentsRequest(event, id, { method: 'POST', body: toDjangoForm({ autor, conteudo }, midia) })
     clearFeedCache()
     return res
-  } catch (e) { fail(e, 'Não foi possível comentar.') }
+  } catch (e: any) {
+    console.error('[ERRO COMENTARIO DJANGO DATA]:', e?.data)
+    fail(e, 'Não foi possível comentar.')
+  }
 })
