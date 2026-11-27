@@ -1,7 +1,6 @@
 import type { H3Event } from 'h3'
 import { isError } from 'h3'
 
-/** Garante uma URL válida: com https:// e sem barra no final. Avisa se a variável não foi definida. */
 function baseUrl(raw: unknown): string {
   let u = String(raw ?? '').trim()
   if (!u) {
@@ -14,22 +13,27 @@ function baseUrl(raw: unknown): string {
   return u.replace(/\/+$/, '')
 }
 
-/** Chama o back-end Django. O Render gratuito pode demorar a acordar, por isso o limite longo. */
+/** Chama o back-end Django enviando tanto o token (se existir) quanto os cookies da sessão. */
 export async function django<T = any>(event: H3Event, path: string, opts: any = {}) {
   const cfg = useRuntimeConfig(event)
   const token = getCookie(event, 'token')
+  const cookieHeader = getHeader(event, 'cookie') || ''
+
   return $fetch<T>(path, {
     baseURL: baseUrl(cfg.djangoApi),
     timeout: 60000,
     retry: 0,
     ...opts,
-    headers: { ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}), ...opts.headers }
+    headers: {
+      ...(token ? { Authorization: `${cfg.djangoAuthScheme || 'Bearer'} ${token}` } : {}),
+      Cookie: cookieHeader,
+      ...opts.headers
+    }
   })
 }
 
-/** Converte um erro do Django em um erro do Nuxt com mensagem amigável (e registra o motivo no terminal). */
 export function fail(e: any, fallback: string): never {
-  if (isError(e)) throw e   // erros nossos (ex.: back-end não configurado) passam direto
+  if (isError(e)) throw e
   const code = e?.statusCode ?? e?.response?.status
   console.error('[django]', code ?? 'sem resposta', e?.cause?.code ?? e?.name ?? '', e?.message ?? e)
   const detail = e?.data?.detail || e?.data?.mensagem || e?.data?.message || e?.data?.erro
@@ -42,26 +46,30 @@ export function fail(e: any, fallback: string): never {
   throw createError({ statusCode: code, message: fallback })
 }
 
-/** Id do usuário logado, vindo do cookie (o navegador não consegue alterar nem forjar). */
 export function currentUserId(event: H3Event): number {
   const id = getCookie(event, 'uid')
   if (!id) throw createError({ statusCode: 401, message: 'Entre na sua conta para continuar.' })
   return Number(id)
 }
 
-/** O Django devolve listas dentro de uma chave ("Postagens", "Comentarios"...). */
 export function list(data: any, key: string): any[] {
   if (Array.isArray(data)) return data
   return data?.[key] ?? data?.results ?? []
 }
 
-// O back-end não tem campos de matéria e de tipo do post: guardamos os dois no fim do texto, como "#Matemática #Pergunta".
+export function mediaUrl(event: H3Event, raw?: string) {
+  if (!raw) return ''
+  if (/^https?:\/\//i.test(raw)) return raw
+  const cfg = useRuntimeConfig(event)
+  return `${baseUrl(cfg.djangoApi).replace(/\/api$/, '')}${raw.startsWith('/') ? '' : '/'}${raw}`
+}
+
 export function joinTag(text: string, tag?: string, tipo?: string) {
   const h = (v?: string) => (v ? '#' + String(v).trim().replace(/\s+/g, '_') : '')
   const trailer = [h(tag), h(tipo)].filter(Boolean).join(' ')
   return trailer ? `${text}\n\n${trailer}` : text
 }
-// Atenção: ao viajar em FormData (multipart) as quebras de linha viram \r\n, por isso o \r? aqui.
+
 export function splitTag(content: string) {
   const m = content.match(/\r?\n\r?\n#([^\s#]+)(?:[ \t]+#([^\s#]+))?\s*$/)
   return m
