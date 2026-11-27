@@ -76,10 +76,11 @@ async function share() {
         <p v-if="auth.bio" class="bio">{{ auth.bio }}</p>
       </div>
 
-      <div class="stats">
-        <div><span>Seguindo</span><b>{{ auth.following }}</b></div>
+      <div class="stats s4">
+        <NuxtLink :to="`/usuarios/${auth.id}/seguidores`" class="stat"><span>Seguidores</span><b>{{ auth.followers }}</b></NuxtLink>
+        <NuxtLink :to="`/usuarios/${auth.id}/seguindo`" class="stat"><span>Seguindo</span><b>{{ auth.following }}</b></NuxtLink>
         <div><span>Posts</span><b>{{ store.mine.length }}</b></div>
-        <div><span>Posts Respondidos</span><b>{{ store.answered.length }}</b></div>
+        <div><span>Respondidos</span><b>{{ store.answered.length }}</b></div>
       </div>
       <TabBar v-model="tab" :tabs="tabs" />
       <LoadNotice />

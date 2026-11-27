@@ -174,8 +174,13 @@ a { color: inherit; text-decoration: none; }
 .avatar-edit { position: relative; line-height: 0; border-radius: 50%; }
 .avatar-edit .cam { position: absolute; right: 0; bottom: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--c-mark); color: var(--c-on-mark); }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 16px 22px; border-block: 2px solid var(--c-zig); text-align: center; }
-.stats > div { display: grid; padding: 8px 4px; font-size: .78rem; }
-.stats > div + div { border-left: 2px solid var(--c-zig); }
+.stats > div, .stats > .stat { display: grid; padding: 8px 4px; font-size: .78rem; }
+.stats > * + * { border-left: 2px solid var(--c-zig); }
+.stats.s4 { grid-template-columns: repeat(4, 1fr); }
+.stats > .stat { transition: background .2s; }
+.stats > .stat:hover, .stats > .stat:focus-visible { background: var(--c-chip); }
+.stats > .stat span { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--c-line); }
+.stats span { overflow-wrap: anywhere; }
 .stats b { font-weight: 500; font-size: .95rem; }
 .ptabs { display: flex; align-items: stretch; margin: 0 16px; border-bottom: 2px solid var(--c-zig); }
 .ptabs button { display: inline-flex; align-items: center; gap: 6px; padding: .5rem .9rem; font-size: .85rem; transition: background .2s, color .2s; }
@@ -272,9 +277,20 @@ a { color: inherit; text-decoration: none; }
 .who-txt { flex: 1; min-width: 0; display: grid; }
 .who-txt strong, .who-txt small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .who-txt small { color: var(--c-muted); font-size: .82rem; }
-.who-row .btn { min-height: 30px; padding: 0 10px; font-size: .8rem; }
-.who-row .btn::before { display: none; }
-.who-row .btn[aria-pressed="true"] { background: transparent; border: 1px solid var(--c-btn); }
+.who-link { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+.who-link:hover strong { text-decoration: underline; }
+/* botão Seguir (posts, listas, perfil, painel da direita) */
+.follow-btn { min-height: 30px; padding: 0 12px; font-size: .8rem; flex: none; }
+.follow-btn[aria-pressed="true"] { background: transparent; border: 1px solid var(--c-btn); }
+.follow-list { list-style: none; margin: 0; padding: 4px 16px; display: grid; }
+.follow-list .who-txt strong { font-weight: 500; }
+.post-avatar { display: block; line-height: 0; border-radius: 50%; align-self: start; }
+.post-who { min-width: 0; }
+.post-who .author:hover strong { text-decoration: underline; }
+.head-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+.user-id { display: grid; justify-items: center; text-align: center; padding: 8px 16px 0; }
+.user-actions { grid-column: 1 / -1; margin-top: 12px; }
+.user-id .id-right { display: grid; justify-items: center; }
 .more-link { color: var(--c-focus); padding: .6rem 0 .2rem; }
 .more-link:hover { text-decoration: underline; }
 

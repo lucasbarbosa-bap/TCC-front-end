@@ -21,7 +21,6 @@ export const usePostsStore = defineStore('posts', {
     error: '',
     activeTag: null as string | null,
     query: '',
-    following: [] as string[],   // ainda só no site (o back-end não tem rota para seguir)
     hidden: [] as number[],
     favIds: [] as number[],      // favoritos ficam salvos neste navegador
     busyLikes: [] as number[],
@@ -185,11 +184,6 @@ export const usePostsStore = defineStore('posts', {
         useToast().show(msg(e, 'Não foi possível excluir o post'))
       }
     },
-    hide(id: number) { this.hidden.push(id) },
-    toggleFollow(name: string) {
-      if (!useAuthStore().requireLogin()) return
-      const i = this.following.indexOf(name)
-      if (i >= 0) this.following.splice(i, 1); else this.following.push(name)
-    }
+    hide(id: number) { this.hidden.push(id) }
   }
 })

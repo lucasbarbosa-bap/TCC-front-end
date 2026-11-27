@@ -27,7 +27,13 @@ export default defineEventHandler(async (event) => {
   if (res?.id == null) {
     throw createError({ statusCode: 502, message: 'Conta criada, mas o servidor não devolveu o id. Entre com seu usuário e senha.' })
   }
-  startSession(event, user, Number(res.id))
+  // o cadastro não devolve o token: fazemos o login em seguida para ter o JWT (necessário para seguir)
+  let token: string | undefined
+  try {
+    const l = await django(event, '/auth/login/', { method: 'POST', body: { username: user, password } })
+    if (l?.token) token = String(l.token)
+  } catch { /* sem token: a pessoa entra mesmo assim e o token vem no próximo login */ }
+  startSession(event, user, Number(res.id), token)
 
   // o cadastro não devolve a URL da foto: buscamos no perfil
   let url = ''

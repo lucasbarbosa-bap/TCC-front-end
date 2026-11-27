@@ -44,11 +44,20 @@ async function share() {
 
 <template>
   <article :id="`post-${post.id}`" class="post">
-    <UserAvatar :name="post.name" :src="post.avatar" />
+    <NuxtLink v-if="post.authorId != null" :to="mine ? '/perfil' : `/usuarios/${post.authorId}`" class="post-avatar" :aria-label="`Perfil de ${post.name}`">
+      <UserAvatar :name="post.name" :src="post.avatar" />
+    </NuxtLink>
+    <div v-else class="post-avatar"><UserAvatar :name="post.name" :src="post.avatar" /></div>
     <div class="post-main">
       <header class="post-head">
-        <div><strong>{{ post.name }}</strong><span class="meta">{{ post.time }}</span></div>
-        <div class="more">
+        <div class="post-who">
+          <NuxtLink v-if="post.authorId != null" :to="mine ? '/perfil' : `/usuarios/${post.authorId}`" class="author"><strong>{{ post.name }}</strong></NuxtLink>
+          <strong v-else>{{ post.name }}</strong>
+          <span class="meta">{{ post.time }}</span>
+        </div>
+        <div class="head-actions">
+          <FollowButton :user-id="post.authorId" :name="post.name" />
+          <div class="more">
           <button class="kebab" aria-label="Mais opções" aria-haspopup="menu" :aria-expanded="menu" @click="menu = !menu"><i /><i /><i /></button>
           <div v-if="menu" class="click-away" @click="menu = false" />
           <Transition name="pop">
@@ -58,6 +67,7 @@ async function share() {
               <button v-if="!mine" role="menuitem" @click="report">Denunciar</button>
             </div>
           </Transition>
+          </div>
         </div>
       </header>
 

@@ -20,8 +20,8 @@ const shownTopics = computed(() => (moreTopics.value ? topics.value : topics.val
 
 // "Quem seguir": autores dos posts
 const people = computed(() => {
-  const m = new Map<string, { name: string; avatar: string }>()
-  for (const p of store.posts) if (p.name !== auth.user && !m.has(p.name)) m.set(p.name, { name: p.name, avatar: p.avatar })
+  const m = new Map<string, { id: number; name: string; avatar: string }>()
+  for (const p of store.posts) if (p.authorId != null && p.authorId !== auth.id && !m.has(p.name)) m.set(p.name, { id: p.authorId, name: p.name, avatar: p.avatar })
   return [...m.values()]
 })
 const shownPeople = computed(() => (morePeople.value ? people.value : people.value.slice(0, 3)))
@@ -46,11 +46,11 @@ const handle = (n: string) => '@' + n.normalize('NFD').replace(/[\u0300-\u036f]/
     <section class="card">
       <h2>Quem seguir</h2>
       <div v-for="u in shownPeople" :key="u.name" class="who-row">
-        <UserAvatar :name="u.name" :src="u.avatar" />
-        <div class="who-txt"><strong>{{ u.name }}</strong><small>{{ handle(u.name) }}</small></div>
-        <button class="btn" :aria-pressed="store.following.includes(u.name)" @click="store.toggleFollow(u.name)">
-          {{ store.following.includes(u.name) ? 'Seguindo' : 'Seguir' }}
-        </button>
+        <NuxtLink :to="`/usuarios/${u.id}`" class="who-link">
+          <UserAvatar :name="u.name" :src="u.avatar" />
+          <div class="who-txt"><strong>{{ u.name }}</strong><small>{{ handle(u.name) }}</small></div>
+        </NuxtLink>
+        <FollowButton :user-id="u.id" :name="u.name" />
       </div>
       <button v-if="people.length > 3" class="more-link" @click="morePeople = !morePeople">{{ morePeople ? 'Mostrar menos' : 'Mostrar mais' }}</button>
     </section>

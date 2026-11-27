@@ -32,7 +32,7 @@ Este documento lista o que o site usa do `views.py` atual e o que ainda falta.
    Também vale impedir curtida duplicada no model (UniqueConstraint em autor, post, comentario, tipo) e limpar as repetidas que já existem. O site já conta pessoas diferentes, então um número inflado no banco não aparece na tela.
 2. **Rota de comentários.** O view recebe `id_post`, mas não vimos o `urls.py`. O site tenta `/comentario/<id>/`, `/postagem/<id>/comentarios/`, `/comentarios/<id>/` e `/postagem/<id>/comentario/` e guarda a que funcionar. Se for outra, defina `NUXT_COMMENTS_PATH` (ex.: `/comentario/{id}/`).
 3. **Conversas (chat).** Não existem rotas de conversa. O site usa modo demonstração; as rotas sugeridas estão em CHAT-BACKEND.md.
-4. **Seguir.** O model tem `seguidores` e `seguindo`, mas não há rota para seguir. No site, "seguir" fica só no navegador.
+4. **Seguir.** Já integrado: `POST/DELETE /api/usuarios/<id>/seguir/` (exige JWT), `GET /api/usuarios/<id>/seguidores/` e `GET /api/usuarios/<id>/seguindo/`. O site guarda o `token` devolvido no login em cookie httpOnly e o envia como `Authorization: Bearer`.
 5. **Matéria e tipo do post.** Não há campos; o site guarda os dois no fim do `conteudo` (ex.: "#Matemática #Pergunta") e separa na leitura. O ideal é criar os campos `materia` e `tipo` no model.
 
 ## Segurança (para depois)

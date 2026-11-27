@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const auth = useAuthStore()
 const posts = usePostsStore()
+const follows = useFollowsStore()
 const drawer = useState('drawer', () => false)
 const msg = useState('toast', () => '')
 const route = useRoute()
@@ -12,10 +13,10 @@ watch(() => route.path, () => { drawer.value = false })
 onMounted(() => {
   posts.hydrate()   // mostra na hora o último feed salvo, enquanto busca o novo
   posts.load()
-  if (auth.logged) { auth.loadProfile(); posts.initFavs(auth.id) }
+  if (auth.logged) { auth.loadProfile(); posts.initFavs(auth.id); follows.load() }
 })
 watch(() => auth.logged, (ok) => {
-  if (ok) { auth.loadProfile(); posts.initFavs(auth.id) } else { posts.favIds = [] }
+  if (ok) { auth.loadProfile(); posts.initFavs(auth.id); follows.load() } else { posts.favIds = []; follows.reset() }
   posts.load()   // atualiza as curtidas de quem entrou ou saiu
 })
 </script>
