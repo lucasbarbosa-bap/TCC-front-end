@@ -1,4 +1,4 @@
-// Cria a conta no Django (POST /api/registar/, em FormData, com foto opcional) e já deixa a pessoa logada.
+// Cria a conta no Django (POST /api/registar/, FormData, com foto opcional) e já deixa a pessoa logada.
 export default defineEventHandler(async (event) => {
   const { fields, files } = await readUpload(event)
   const user = (fields.username ?? '').trim()
@@ -28,5 +28,11 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 502, message: 'Conta criada, mas o servidor não devolveu o id. Entre com seu usuário e senha.' })
   }
   startSession(event, user, Number(res.id))
-  return { user, id: Number(res.id), avatar: mediaUrl(event, res?.avatar) }
+
+  // o cadastro não devolve a URL da foto: buscamos no perfil
+  let url = ''
+  if (avatar.length) {
+    try { url = mediaUrl(event, (await django(event, `/usuarios/${res.id}/`))?.mensagem?.avatar) } catch { /* a foto aparece no próximo login */ }
+  }
+  return { user, id: Number(res.id), avatar: url, bio: '' }
 })

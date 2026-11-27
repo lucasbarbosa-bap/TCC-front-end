@@ -1,11 +1,9 @@
 <script setup lang="ts">
 const props = defineProps<{ name: string; big?: boolean; src?: string }>()
 const auth = useAuthStore()
-// a foto trocada neste navegador vale primeiro; senão, a foto que veio do servidor
-const local = computed(() => (auth.logged && props.name === auth.user ? auth.avatar : ''))
-const img = computed(() => local.value || props.src || '')
-const initials = computed(() =>
-  props.name.replace(/^(Prof\.|Profa\.)\s*/, '').split(/[\s_]+/).map(w => w[0]).slice(0, 2).join('').toUpperCase())
+// foto que veio do servidor; para o próprio usuário, a foto do perfil dele
+const img = computed(() => props.src || (auth.logged && props.name === auth.user ? auth.avatar : ''))
+const initials = computed(() => props.name.split(/[\s_]+/).filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase())
 </script>
 
 <template>

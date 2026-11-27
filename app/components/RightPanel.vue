@@ -18,17 +18,14 @@ const topics = computed(() => {
 })
 const shownTopics = computed(() => (moreTopics.value ? topics.value : topics.value.slice(0, 3)))
 
-// "Quem seguir": autores de posts e comentários
+// "Quem seguir": autores dos posts
 const people = computed(() => {
-  const m = new Map<string, string>()
-  for (const p of store.posts) {
-    if (p.name !== auth.user) m.set(p.name, p.role)
-    for (const c of p.cms) if (c.n !== auth.user && !m.has(c.n)) m.set(c.n, c.r)
-  }
-  return [...m].map(([name, role]) => ({ name, role }))
+  const m = new Map<string, { name: string; avatar: string }>()
+  for (const p of store.posts) if (p.name !== auth.user && !m.has(p.name)) m.set(p.name, { name: p.name, avatar: p.avatar })
+  return [...m.values()]
 })
 const shownPeople = computed(() => (morePeople.value ? people.value : people.value.slice(0, 3)))
-const handle = (n: string) => '@' + n.replace(/^(Prof\.|Profa\.)\s*/, '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '_')
+const handle = (n: string) => '@' + n.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, '_')
 </script>
 
 <template>
@@ -41,7 +38,7 @@ const handle = (n: string) => '@' + n.replace(/^(Prof\.|Profa\.)\s*/, '').normal
           <button class="topic-title" @click="store.setTag(t.tag)">{{ t.title }}</button>
           <small>{{ t.posts }} {{ t.posts === 1 ? 'post' : 'posts' }}</small>
         </div>
-        <button class="ico sm" :aria-label="`Não tenho interesse em ${t.tag}`" @click="hiddenTopics.push(t.tag)"><Icon name="dots" :size="18" /></button>
+        <button class="ico sm" :aria-label="`Não tenho interesse em ${t.tag}`" @click="hiddenTopics.push(t.tag)"><Icon name="close" :size="16" /></button>
       </div>
       <button v-if="topics.length > 3" class="more-link" @click="moreTopics = !moreTopics">{{ moreTopics ? 'Mostrar menos' : 'Mostrar mais' }}</button>
     </section>
@@ -49,9 +46,9 @@ const handle = (n: string) => '@' + n.replace(/^(Prof\.|Profa\.)\s*/, '').normal
     <section class="card">
       <h2>Quem seguir</h2>
       <div v-for="u in shownPeople" :key="u.name" class="who-row">
-        <UserAvatar :name="u.name" />
-        <div class="who-txt"><strong>{{ u.name }}</strong><small>{{ handle(u.name) }} · {{ u.role }}</small></div>
-        <button class="pill sm" :aria-pressed="store.following.includes(u.name)" @click="store.toggleFollow(u.name)">
+        <UserAvatar :name="u.name" :src="u.avatar" />
+        <div class="who-txt"><strong>{{ u.name }}</strong><small>{{ handle(u.name) }}</small></div>
+        <button class="btn" :aria-pressed="store.following.includes(u.name)" @click="store.toggleFollow(u.name)">
           {{ store.following.includes(u.name) ? 'Seguindo' : 'Seguir' }}
         </button>
       </div>

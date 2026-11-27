@@ -18,22 +18,12 @@ function baseUrl(raw: unknown): string {
 export async function django<T = any>(event: H3Event, path: string, opts: any = {}) {
   const cfg = useRuntimeConfig(event)
   const token = getCookie(event, 'token')
-  
-  // Verifica se o corpo da requisição é um FormData
-  const isFormData = opts.body instanceof FormData
-
   return $fetch<T>(path, {
     baseURL: baseUrl(cfg.djangoApi),
     timeout: 60000,
     retry: 0,
     ...opts,
-    headers: {
-      'Accept': 'application/json',
-      // Se for FormData, removemos o Content-Type fixo para o Nuxt/Node gerar o boundary correto
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}),
-      ...opts.headers
-    }
+    headers: { ...(token ? { Authorization: `${cfg.djangoAuthScheme} ${token}` } : {}), ...opts.headers }
   })
 }
 
@@ -65,14 +55,18 @@ export function list(data: any, key: string): any[] {
   return data?.[key] ?? data?.results ?? []
 }
 
-// O back-end ainda não tem campo de tag: guardamos a tag no fim do texto, como "#Python".
-export function joinTag(text: string, tag?: string) {
-  return tag ? `${text}\n\n#${String(tag).trim().replace(/\s+/g, '_')}` : text
+// O back-end não tem campos de matéria e de tipo do post: guardamos os dois no fim do texto, como "#Matemática #Pergunta".
+export function joinTag(text: string, tag?: string, tipo?: string) {
+  const h = (v?: string) => (v ? '#' + String(v).trim().replace(/\s+/g, '_') : '')
+  const trailer = [h(tag), h(tipo)].filter(Boolean).join(' ')
+  return trailer ? `${text}\n\n${trailer}` : text
 }
 // Atenção: ao viajar em FormData (multipart) as quebras de linha viram \r\n, por isso o \r? aqui.
 export function splitTag(content: string) {
-  const m = content.match(/\r?\n\r?\n#([^\s#]+)\s*$/)
-  return m ? { text: content.slice(0, m.index), tag: m[1].replace(/_/g, ' ') } : { text: content, tag: 'Geral' }
+  const m = content.match(/\r?\n\r?\n#([^\s#]+)(?:[ \t]+#([^\s#]+))?\s*$/)
+  return m
+    ? { text: content.slice(0, m.index), tag: m[1].replace(/_/g, ' '), tipo: (m[2] ?? '').replace(/_/g, ' ') }
+    : { text: content, tag: 'Geral', tipo: '' }
 }
 
 export function ago(iso?: string) {

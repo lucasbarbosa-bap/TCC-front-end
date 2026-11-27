@@ -1,19 +1,19 @@
 <script setup lang="ts">
-const auth = useAuthStore()
 const { show } = useToast()
-function remove() {
-  if (confirm('Excluir sua conta? Esta ação não pode ser desfeita.')) { auth.logout(); navigateTo('/') }
-}
+const items: { t: string; to?: string }[] = [
+  { t: 'Sua conta', to: '/perfil' },
+  { t: 'Privacidade' },
+  { t: 'Notificações' },
+  { t: 'Chats', to: '/chats' }
+]
+function go(i: { to?: string }) { i.to ? navigateTo(i.to) : show('Em breve') }
 </script>
 
 <template>
-  <div class="gray">
+  <div>
     <PageBar title="Configurações" />
-    <ul class="settings">
-      <li><button @click="show('Em breve')">Sua Conta</button></li>
-      <li><button @click="show('Em breve')">Privacidade e Segurança</button></li>
-      <li><button @click="show('Em breve')">notificações</button></li>
-      <li><button class="danger" @click="remove">excluir conta</button></li>
-    </ul>
+    <nav class="bars settings">
+      <button v-for="i in items" :key="i.t" class="bar-item" @click="go(i)"><span class="mk" />{{ i.t }}</button>
+    </nav>
   </div>
 </template>

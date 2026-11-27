@@ -1,6 +1,6 @@
-// Cria o comentário no Django (POST /api/comentario/ em FormData), com até 5 imagens em "midia".
+// Cria o comentário no Django (FormData), com até 5 imagens em "midia". O post vai na URL.
 export default defineEventHandler(async (event) => {
-  const post_original = Number(getRouterParam(event, 'id'))
+  const id = Number(getRouterParam(event, 'id'))
   const { fields, files } = await readUpload(event)
   const conteudo = (fields.text ?? '').trim()
   if (!conteudo) throw createError({ statusCode: 400, message: 'Escreva um comentário.' })
@@ -8,6 +8,8 @@ export default defineEventHandler(async (event) => {
   checkUpload(midia, { max: 5, mb: 5, exts: IMG_EXT, label: 'o comentário' })
   const autor = currentUserId(event)
   try {
-    return await django(event, '/comentario/', { method: 'POST', body: toDjangoForm({ autor, post_original, conteudo }, midia) })
+    const res = await commentsRequest(event, id, { method: 'POST', body: toDjangoForm({ autor, conteudo }, midia) })
+    clearFeedCache()
+    return res
   } catch (e) { fail(e, 'Não foi possível comentar.') }
 })

@@ -11,8 +11,14 @@ const avatarEl = ref<HTMLInputElement>()
 
 function go(m: 'entrar' | 'criar') { mode.value = m; err.value = '' }
 function maskDate(e: Event) {
-  const d = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 6)
+  const d = (e.target as HTMLInputElement).value.replace(/\D/g, '').slice(0, 8)
   f.birth = d.replace(/^(\d{2})(\d)/, '$1/$2').replace(/^(\d{2}\/\d{2})(\d)/, '$1/$2')
+}
+function validDate(s: string) {
+  const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  if (!m) return false
+  const [d, mo, y] = [+m[1], +m[2], +m[3]]
+  return d >= 1 && d <= 31 && mo >= 1 && mo <= 12 && y >= 1900 && y <= new Date().getFullYear()
 }
 function pickAvatar(e: Event) {
   const input = e.target as HTMLInputElement
@@ -54,7 +60,7 @@ async function submit() {
     if (f.user.includes('@')) { err.value = 'O nome de usuário não pode ter @.'; return }
     if (f.pass.length < 6) { err.value = 'A senha precisa ter ao menos 6 caracteres.'; return }
     if (f.pass !== f.pass2) { err.value = 'As senhas não coincidem.'; return }
-    if (!/^\d{2}\/\d{2}\/\d{2}$/.test(f.birth)) { err.value = 'Informe a data como dd/mm/aa.'; return }
+    if (!validDate(f.birth)) { err.value = 'Informe a data de nascimento como dd/mm/aaaa.'; return }
     // A data de nascimento ainda não é salva: o back-end não tem esse campo.
     await run(() => auth.register(f.user.trim(), f.email.trim(), f.pass, avatarFile.value), 'Não foi possível criar a conta. Tente de novo.')
   }
@@ -66,39 +72,36 @@ async function submit() {
     <section class="sheet" role="dialog" aria-modal="true" :aria-label="mode === 'entrar' ? 'Entrar' : 'Criar conta'">
       <i class="handle" />
       <div class="socials">
-        <button v-for="p in ['Google', 'Microsoft', 'GitHub']" :key="p" type="button" class="circle"
-                :aria-label="`Entrar com ${p}`" @click="show('Em breve')" />
+        <button v-for="p in [['x', 'X'], ['facebook', 'Facebook'], ['google', 'Google']]" :key="p[0]" type="button" class="social" :aria-label="`Entrar com ${p[1]}`" @click="show('Em breve')">
+          <Icon :name="p[0]" :size="26" />
+        </button>
       </div>
-      <div class="or"><span>ou</span></div>
 
       <Transition name="swap" mode="out-in">
         <form v-if="mode === 'entrar'" key="entrar" @submit.prevent="submit">
-          <label class="field">usuario/e-mail<input v-model="f.login" autocomplete="username"></label>
-          <label class="field">senha<input v-model="f.pass" type="password" autocomplete="current-password"></label>
+          <label class="field">Usuario/E-mail<input v-model="f.login" autocomplete="username"></label>
+          <label class="field">Senha<input v-model="f.pass" type="password" autocomplete="current-password"></label>
           <p v-if="err" class="err" role="alert">{{ err }}</p>
           <p v-if="slow" class="hint" role="status">Acordando o servidor… na primeira vez pode levar até 1 minuto.</p>
           <div class="row2">
-            <button type="button" class="pill" @click="show('Em breve')">Esqueci a senha</button>
-            <button type="submit" class="pill" :disabled="busy">{{ busy ? 'Entrando…' : 'Entrar' }}</button>
+            <button type="button" class="btn" @click="go('criar')"><span class="mk" />Criar Conta</button>
+            <button type="submit" class="btn" :disabled="busy"><span class="mk" />{{ busy ? 'Entrando…' : 'Entrar' }}</button>
           </div>
-          <button type="button" class="pill big" @click="go('criar')">Criar conta</button>
         </form>
 
         <form v-else key="criar" @submit.prevent="submit">
-          <label class="field">e-mail<input v-model="f.email" type="email" autocomplete="email"></label>
-          <label class="field">usuario<input v-model="f.user" autocomplete="username"></label>
-          <label class="field">senha<input v-model="f.pass" type="password" autocomplete="new-password"></label>
-          <label class="field">repita a senha<input v-model="f.pass2" type="password" autocomplete="new-password"></label>
-          <input class="date" :value="f.birth" inputmode="numeric" placeholder="dd/mm/aa" aria-label="Data de nascimento" @input="maskDate">
+          <label class="field">E-mail<input v-model="f.email" type="email" autocomplete="email"></label>
+          <label class="field">Usuario<input v-model="f.user" autocomplete="username"></label>
+          <label class="field">Senha<input v-model="f.pass" type="password" autocomplete="new-password"></label>
+          <label class="field">Repita a Senha<input v-model="f.pass2" type="password" autocomplete="new-password"></label>
+          <input class="date" :value="f.birth" inputmode="numeric" placeholder="dd/mm/aaaa" aria-label="Data de nascimento" @input="maskDate">
           <input ref="avatarEl" type="file" accept=".jpg,.jpeg,.png,.gif,.webp,image/*" hidden @change="pickAvatar">
-          <button type="button" class="pill sm" style="max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" @click="avatarEl?.click()">
-            {{ avatarFile ? avatarFile.name : 'foto de perfil (opcional)' }}
-          </button>
+          <button type="button" class="btn" style="max-width:100%" @click="avatarEl?.click()"><span class="mk" />{{ avatarFile ? avatarFile.name : 'Foto de perfil (opcional)' }}</button>
           <p v-if="err" class="err" role="alert">{{ err }}</p>
           <p v-if="slow" class="hint" role="status">Acordando o servidor… na primeira vez pode levar até 1 minuto.</p>
           <div class="row2">
-            <button type="button" class="pill" @click="go('entrar')">entrar</button>
-            <button type="submit" class="pill" :disabled="busy">{{ busy ? 'Criando…' : 'criar conta' }}</button>
+            <button type="button" class="btn" @click="go('entrar')"><span class="mk" />Entrar</button>
+            <button type="submit" class="btn" :disabled="busy"><span class="mk" />{{ busy ? 'Criando…' : 'Criar Conta' }}</button>
           </div>
         </form>
       </Transition>
