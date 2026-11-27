@@ -57,7 +57,65 @@ button { cursor: pointer; border: 0; background: none; padding: 0; text-align: i
 :focus-visible { outline: 3px solid var(--c-focus); outline-offset: 2px; }
 a { color: inherit; text-decoration: none; }
 .shell { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; min-height: 100dvh; padding-bottom: 56px; }
+/* =====================================================================
+   POSTS E COMENTÁRIOS (mais respiro e leitura limpa)
+   ===================================================================== */
+.feed { margin-top: 12px; }
+.post { display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 22px 18px 14px; }
+.post .avatar { width: 48px; height: 48px; margin-top: 2px; }
+.post-main { min-width: 0; border-bottom: 1px solid var(--c-line); padding-bottom: 16px; }
+.post-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 6px; }
+.post-head strong { font-weight: 600; font-size: 1.05rem; }
+.meta { color: var(--c-muted); font-size: .8rem; margin-left: .45rem; }
+.post p { margin: .4rem 0 .75rem; line-height: 1.55; white-space: pre-line; overflow-wrap: anywhere; }
+.post h3 { font-size: 1.05rem; margin: .3rem 0; }
+.tags-line { display: flex; gap: .6rem; flex-wrap: wrap; font-size: .8rem; color: var(--c-muted); margin-bottom: .4rem; }
+.tags-line button:hover { text-decoration: underline; }
 
+.acts { display: flex; justify-content: space-between; align-items: center; margin: .85rem 0 0; padding: 4px 2px 0; }
+.acts button { display: inline-flex; align-items: center; gap: 6px; min-width: 44px; height: 38px; color: var(--c-faint); font-size: .85rem; transition: transform .15s var(--ease); }
+
+.cm { margin-top: .85rem; padding: .85rem 1rem; background: var(--c-chip); border-left: 2px solid var(--c-line); }
+.cm-head { display: flex; align-items: center; flex-wrap: wrap; gap: .6rem; margin-bottom: .4rem; }
+.cm p { margin: 0; line-height: 1.45; }
+.cmform { display: flex; gap: 10px; margin: .9rem 0 4px; }
+.cmform input[type=text] { flex: 1; min-width: 0; height: 40px; padding: 0 14px; border: 1px solid var(--c-line); background: var(--c-field); color: var(--c-on-field); }
+.cmform .btn { padding: 0 14px; height: 40px; }
+
+/* =====================================================================
+   PERFIL (próprio e de outros usuários)
+   ===================================================================== */
+.cover { position: relative; height: 118px; background: var(--c-surface); color: var(--c-on-surface); }
+.cover .back { position: absolute; left: 10px; top: 8px; display: flex; align-items: center; gap: 2px; }
+.cover .back span { font-size: .78rem; padding-left: 8px; border-left: 1px solid var(--c-muted); }
+.cover .switch { position: absolute; right: 16px; top: 18px; font-size: .95rem; }
+
+.id { position: relative; z-index: 1; display: grid; grid-template-columns: auto 1fr; align-items: start; gap: 14px; padding: 0 20px; margin-top: -42px; }
+.id-left { padding-top: 52px; }
+.id-right { display: grid; justify-items: end; gap: 6px; }
+.id-name { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+.id-name h1 { font-size: 1.25rem; font-weight: 600; }
+.id small { color: var(--c-muted); font-size: .8rem; }
+.bio { grid-column: 1 / -1; margin: .75rem 0 0; font-size: .92rem; line-height: 1.5; }
+
+/* Perfil de outro usuário (tela da foto) */
+.user-id { display: grid; justify-items: center; text-align: center; gap: 6px; padding: 24px 20px 8px; }
+.user-id .avatar.big { width: 88px; height: 88px; margin-top:40px; }
+.user-id .id-right { display: grid; justify-items: center; gap: 4px; }
+.user-id .id-name { margin-top: 4px; justify-content: center; }
+.user-actions { grid-column: 1 / -1; margin-top: 14px; display: flex; justify-content: center; gap: 10px; }
+.user-actions .follow-btn { min-width: 132px; min-height: 36px; font-size: .88rem; }
+
+/* Barra de Seguidores / Seguindo / Posts */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 24px 16px 28px; border-block: 2px solid var(--c-zig); background: color-mix(in srgb, var(--c-chip) 45%, transparent); text-align: center; }
+.stats > div, .stats > .stat { display: grid; gap: 4px; padding: 14px 6px; font-size: .8rem; }
+.stats > * + * { border-left: 2px solid var(--c-zig); }
+.stats.s4 { grid-template-columns: repeat(4, 1fr); }
+.stats > .stat { transition: background .2s; }
+.stats > .stat:hover, .stats > .stat:focus-visible { background: var(--c-chip); }
+.stats > .stat span { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--c-line); }
+.stats span { overflow-wrap: anywhere; color: var(--c-muted); }
+.stats b { font-weight: 600; font-size: 1.05rem; color: var(--c-on-page); }
 /* decoração: linha com triângulos (cabeçalhos e rodapé) */
 .zig { height: 8px; border-top: 2px solid var(--c-zig); background: conic-gradient(from 150deg at 50% 0, var(--c-zig) 0deg 60deg, transparent 60deg) 0 0 / 10px 6px repeat-x; }
 .zig-bottom { position: fixed; z-index: 15; left: 0; right: 0; bottom: 0; height: 22px; padding-bottom: env(safe-area-inset-bottom, 0px); background: var(--c-page); border-top: 2px solid var(--c-zig); }
